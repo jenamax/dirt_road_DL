@@ -28,7 +28,7 @@ images_test = []
 labels_test = []
 
 
-for file in glob.glob("data1/img/*.png"):
+for file in glob.glob("vid1/img/*.png"):
     images_names.append(file.split("/")[-1])
 
 images_names.sort()
@@ -36,10 +36,10 @@ images_names.sort()
 for i in range(0, len(images_names)): 
     print(i, end=" ")
     if i < 0.7 * len(images_names):
-      images_train.append(np.asarray(cv2.imread("data1/img/" + images_names[i]))[0:704, :, :])
+      images_train.append(np.asarray(cv2.imread("vid1/img/" + images_names[i]))[0:704, :, :])
       images_train[-1] = cv2.resize(images_train[-1], (512, 256))
     else:
-      images_test.append(np.asarray(cv2.imread("data1/img/" + images_names[i]))[0:704, :, :])
+      images_test.append(np.asarray(cv2.imread("vid1/img/" + images_names[i]))[0:704, :, :])
       images_test[-1] = cv2.resize(images_test[-1], (512, 256))
 
 print()
@@ -47,17 +47,17 @@ print()
 for i in range(0, len(images_names)): 
     print(i, end=" ")
     if i < 0.7 * len(images_names):
-      labels_train.append(np.asarray(cv2.imread("data1/masks/" + images_names[i], 0))[0:704, :])
+      labels_train.append(np.asarray(cv2.imread("vid1/masks/" + images_names[i], 0))[0:704, :])
       labels_train[-1] = cv2.resize(labels_train[-1], (512, 256))
     else:
-      labels_test.append(np.asarray(cv2.imread("data1/masks/" + images_names[i], 0))[0:704, :])
+      labels_test.append(np.asarray(cv2.imread("vid1/masks/" + images_names[i], 0))[0:704, :])
       labels_test[-1] = cv2.resize(labels_test[-1], (512, 256))
 
 print()
 
 images_names = []
 
-for file in glob.glob("data2/img/*.png"):
+for file in glob.glob("vid2/img/*.png"):
     images_names.append(file.split("/")[-1])
 
 images_names.sort()
@@ -65,10 +65,10 @@ images_names.sort()
 for i in range(0, len(images_names)): 
     print(i, end=" ")
     if i < 0.7 * len(images_names):
-      images_train.append(np.asarray(cv2.imread("data2/img/" + images_names[i])[0:704, :, :])) 
+      images_train.append(np.asarray(cv2.imread("vid2/img/" + images_names[i])[0:704, :, :])) 
       images_train[-1] = cv2.resize(images_train[-1], (512, 256)) 
     else:
-      images_test.append(np.asarray(cv2.imread("data2/img/" + images_names[i])[0:704, :, :]))
+      images_test.append(np.asarray(cv2.imread("vid2/img/" + images_names[i])[0:704, :, :]))
       images_test[-1] = cv2.resize(images_test[-1], (512, 256))
 
 print()
@@ -76,10 +76,10 @@ print()
 for i in range(0, len(images_names)): 
     print(i, end=" ")
     if i < 0.7 * len(images_names):
-      labels_train.append(np.asarray(cv2.imread("data2/masks/" + images_names[i], 0))[0:704, :])
+      labels_train.append(np.asarray(cv2.imread("vid2/masks/" + images_names[i], 0))[0:704, :])
       labels_train[-1] = cv2.resize(labels_train[-1], (512, 256))
     else:
-      labels_test.append(np.asarray(cv2.imread("data2/masks/" + images_names[i], 0))[0:704, :])
+      labels_test.append(np.asarray(cv2.imread("vid2/masks/" + images_names[i], 0))[0:704, :])
       labels_test[-1] = cv2.resize(labels_test[-1], (512, 256))
 
 from numpy.random import normal
