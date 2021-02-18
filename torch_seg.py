@@ -18,7 +18,7 @@ model = torch.load('./best_model.pth')
 cap = cv2.VideoCapture("vid.mp4")
 
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
-out = cv2.VideoWriter('output.avi', fourcc, 20.0, (512,256))
+out = cv2.VideoWriter('output.mp4', fourcc, 20.0, (512,256))
 
 while(cap.isOpened()):
 	try:
@@ -35,6 +35,9 @@ while(cap.isOpened()):
 		vis = np.copy(img)
 		cv2.addWeighted(img, alpha, res, 1 - alpha, 0, vis)
 		if ret==True:
+			cv2.imshow("seg", vis)
+			if cv2.waitKey(1) & 0xFF == ord('q'):
+				break
 			out.write(vis)
 		else:
 			break

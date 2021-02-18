@@ -83,26 +83,39 @@ for i in range(0, len(images_names)):
       labels_test[-1] = cv2.resize(labels_test[-1], (512, 256))
 
 from numpy.random import normal
-def augment(images, labels):
+def augment_ilum(images, labels):
   images_aug = []
   labels_aug = []
   for i in range(len(images)):
     for j in range(0, 2):
-      aug = cv2.cvtColor(images[i], cv2.COLOR_BGR2HSV)
-      aug[:, :, 2] += np.uint8(normal(0, 30))
-      aug = cv2.cvtColor(images[i], cv2.COLOR_HSV2BGR)
-      aug[:, :, 0] += np.uint8(normal(0, 30))
-      aug[:, :, 1] += np.uint8(normal(0, 30))
-      aug[:, :, 2] += np.uint8(normal(0, 30))
+      aug = np.copy(images_train[i]).astype(np.float32)
+      scale = np.random.uniform(0.5, 1.5)
+      aug[:, :, 0] *= scale
+      aug[:, :, 1] *= scale
+      aug[:, :, 2] *= scale
       images_aug.append(aug)
       labels_aug.append(labels[i])
   return images + images_aug, labels + labels_aug
 
-# print()
-# print(len(images_train), len(images_test))
-# images_train, labels_train = augment(images_train, labels_train)
+def augment_noise(images, labels):
+  images_aug = []
+  labels_aug = []
+  for i in range(len(images)):
+    for j in range(0, 2):
+      aug = np.copy(images_train[i]).astype(np.float32)
+      noise = np.uint8(normal(0, 1, (aug.shape)))
+      aug += noise
+      images_aug.append(aug)
+      labels_aug.append(labels[i])
+  return images + images_aug, labels + labels_aug
+
+
+print()
+print(len(images_train), len(images_test))
+images_train, labels_train = augment_ilum(images_train, labels_train)
+images_train, labels_train = augment_noise(images_train, labels_train)
 # images_test, labels_test = augment(images_test, labels_test)
-# print(len(images_train), len(images_test))
+print(len(images_train), len(images_test))
 
 n_rows,n_cols = (64*4,192*4)
 
@@ -226,39 +239,19 @@ image, gt_mask = valid_dataset[n]
 
 shape = train_dataset[0][0].cpu().numpy().shape
 
-# img = cv2.resize(cv2.imread("/content/drive/My Drive/road_detection/imgs/out290.png"), (shape[2], shape[1]))
-# s = time.time()
-# image = torch.from_numpy(np.asarray(img.transpose(2, 0, 1), dtype=np.float32))
+ind = int(np.random.uniform(0, len(images_test)))
+img = images_test[ind] # cv2.resize(cv2.imread("/content/drive/My Drive/road_detection/imgs/out290.png"), (shape[2], shape[1]))
+s = time.time()
+image = torch.from_numpy(np.asarray(img, dtype=np.float32))
 
-# x_tensor = image.to(device).unsqueeze(0)
-# pr_mask = model.predict(x_tensor)
-# pr_mask = (pr_mask.squeeze().cpu().numpy().round())
-# print(time.time() - s)
-# res = np.asarray(pr_mask, dtype = np.uint8)
-# res = cv2.cvtColor(res, cv2.COLOR_GRAY2RGB)
-# res *= np.array([255, 0, 0], dtype=np.uint8)
-# vis = np.copy(img)
-# cv2.addWeighted(img, 1, res, 0.3, 0, vis)
-# cv2_imshow(img)
-# cv2_imshow(vis)
+x_tensor = image.to(device).unsqueeze(0)
+pr_mask = model.predict(x_tensor)
+pr_mask = (pr_mask.squeeze().cpu().numpy().round())
+print(time.time() - s)
+res = np.asarray(pr_mask, dtype = np.uint8)
+res = cv2.cvtColor(res, cv2.COLOR_GRAY2RGB)
+res *= np.array([255, 0, 0], dtype=np.uint8)
+vis = np.copy(img)
+#cv2.addWeighted(img, 1, res, 0.3, 0, vis)
+cv2.imwrite("result.png", res)
 
-# import time
-# model = sm.Unet('resnet34', classes=1, activation='sigmoid', encoder_weights='imagenet')
-# model.load_weights("/content/drive/My Drive/road_detection/weights.h5")
-#img = cv2.resize(img, (1280, 704))
-
-# img = images_test[int(random.uniform(0, len(images_test)))] 
-# img = cv2.resize(cv2.imread("/content/drive/My Drive/road_detection/img1.png"), (images_test[0].shape[1], images_test[0].shape[0]))
-# s = time.time()
-# res = np.reshape(model.predict(np.array([img])), (256, 512))
-# print(time.time() - s)
-# res[res <= 0.8] = 0
-# res[res > 0.8] = 1
-# res = np.asarray(res, dtype = np.uint8)
-# res = cv2.cvtColor(res, cv2.COLOR_GRAY2RGB)
-# res *= np.array([255, 0, 0], dtype=np.uint8)
-# alpha = 0.7
-# vis = np.copy(img)
-# cv2.addWeighted(img, alpha, res, 1 - alpha, 0, vis)
-# cv2_imshow(img)
-# cv2_imshow(vis)
