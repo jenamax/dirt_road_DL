@@ -7,8 +7,6 @@ Original file is located at
     https://colab.research.google.com/drive/1LPjT7zxTTVQU1_NYQyhs7AJKtbbMOtZf
 """
 
-# !pip install segmentation-models-pytorch
-
 import cv2
 import numpy as np
 import glob
@@ -34,7 +32,6 @@ for file in glob.glob("vid1/img/*.png"):
 images_names.sort()
 
 for i in range(0, len(images_names)): 
-    print(i, end=" ")
     if i < 0.7 * len(images_names):
       images_train.append(np.asarray(cv2.imread("vid1/img/" + images_names[i]))[0:704, :, :])
       images_train[-1] = cv2.resize(images_train[-1], (512, 256))
@@ -42,18 +39,13 @@ for i in range(0, len(images_names)):
       images_test.append(np.asarray(cv2.imread("vid1/img/" + images_names[i]))[0:704, :, :])
       images_test[-1] = cv2.resize(images_test[-1], (512, 256))
 
-print()
-
 for i in range(0, len(images_names)): 
-    print(i, end=" ")
     if i < 0.7 * len(images_names):
       labels_train.append(np.asarray(cv2.imread("vid1/masks/" + images_names[i], 0))[0:704, :])
       labels_train[-1] = cv2.resize(labels_train[-1], (512, 256))
     else:
       labels_test.append(np.asarray(cv2.imread("vid1/masks/" + images_names[i], 0))[0:704, :])
       labels_test[-1] = cv2.resize(labels_test[-1], (512, 256))
-
-print()
 
 images_names = []
 
@@ -63,7 +55,6 @@ for file in glob.glob("vid2/img/*.png"):
 images_names.sort()
 
 for i in range(0, len(images_names)): 
-    print(i, end=" ")
     if i < 0.7 * len(images_names):
       images_train.append(np.asarray(cv2.imread("vid2/img/" + images_names[i])[0:704, :, :])) 
       images_train[-1] = cv2.resize(images_train[-1], (512, 256)) 
@@ -71,10 +62,7 @@ for i in range(0, len(images_names)):
       images_test.append(np.asarray(cv2.imread("vid2/img/" + images_names[i])[0:704, :, :]))
       images_test[-1] = cv2.resize(images_test[-1], (512, 256))
 
-print()
-
 for i in range(0, len(images_names)): 
-    print(i, end=" ")
     if i < 0.7 * len(images_names):
       labels_train.append(np.asarray(cv2.imread("vid2/masks/" + images_names[i], 0))[0:704, :])
       labels_train[-1] = cv2.resize(labels_train[-1], (512, 256))
@@ -110,11 +98,9 @@ def augment_noise(images, labels):
   return images + images_aug, labels + labels_aug
 
 
-print()
 print(len(images_train), len(images_test))
 images_train, labels_train = augment_ilum(images_train, labels_train)
 images_train, labels_train = augment_noise(images_train, labels_train)
-# images_test, labels_test = augment(images_test, labels_test)
 print(len(images_train), len(images_test))
 
 n_rows,n_cols = (64*4,192*4)
@@ -134,17 +120,6 @@ labels_test = np.asarray(labels_test)
 labels_train = labels_train.astype(np.float32).reshape((labels_train.shape[0], 1, labels_train.shape[1], labels_train.shape[2]))
 labels_test = labels_test.astype(np.float32).reshape((labels_test.shape[0], 1, labels_test.shape[1], labels_test.shape[2]))
 print(labels_train.shape)
-
-# from keras.callbacks import Callback
-
-# class TestCallback(Callback):
-#     def __init__(self, test_data):
-#         self.test_data = test_data
-
-#     def on_epoch_end(self, epoch, logs={}):
-#         x, y = self.test_data
-#         loss, acc = self.model.evaluate(x, y, verbose=0)
-#         print('\nTesting loss: {}, acc: {}\n'.format(loss, acc))
 
 import torch.utils.data as data
 
@@ -176,7 +151,7 @@ valid_dataset = DataLoaderSegmentation(
     labels_test, 
 )
 
-train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True, num_workers=12)
+train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=12)
 valid_loader = DataLoader(valid_dataset, batch_size=1, shuffle=False, num_workers=4)
 
 use_cuda = torch.cuda.is_available()
@@ -185,17 +160,16 @@ device = torch.device("cuda" if use_cuda else "cpu")
 loss = sm.utils.losses.DiceLoss()
 
 metrics = [
-    sm.utils.metrics.IoU(threshold=0.5),
+    sm.utils.metrics.Accuracy(threshold=0.5),
 ]
 
 
-model = sm.Unet('resnet34', classes=1, in_channels=3, activation='sigmoid', encoder_weights='imagenet')
+model = sm.DeepLabV3Plus('resnet34', classes=1, decoder_channels=512,
+	in_channels=3, activation='sigmoid', encoder_weights='imagenet')
 optimizer = torch.optim.Adam([ 
     dict(params=model.parameters(), lr=0.0001),
 ])
-# model.compile(loss='binary_crossentropy', optimizer=optimizers.Adam(lr=learn_rate), metrics=['binary_accuracy'])
-# print(model.summary())
-# callbacks = [EarlyStopping(monitor='loss', patience=2, verbose=1, min_delta=0.01), ModelCheckpoint("/content/drive/My Drive/road_detection/weights.h5", monitor='loss', save_best_only=True, verbose=2)]
+
 train_epoch = sm.utils.train.TrainEpoch(
     model, 
     loss=loss, 
@@ -221,15 +195,14 @@ for i in range(0, 10):
     valid_logs = valid_epoch.run(valid_loader)
     
     # do something (save model, change lr, etc.)
-    if max_score < valid_logs['iou_score']:
-        max_score = valid_logs['iou_score']
+    if max_score < valid_logs['accuracy']:
+        max_score = valid_logs['accuracy']
         torch.save(model, 'best_model.pth')
         print('Model saved!')
         
     if i == 25:
         optimizer.param_groups[0]['lr'] = 1e-5
         print('Decrease decoder learning rate to 1e-5!')
-# model.fit(x=images_train, y=labels_train, callbacks=callbacks, epochs=3, batch_size=2, validation_data=(images_test, labels_test))
 print("Training finished")
 
 import time

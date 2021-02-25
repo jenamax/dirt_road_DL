@@ -26,11 +26,10 @@ while(cap.isOpened()):
 		img = cv2.resize(frame, (512, 256))
 
 		s = time.time()
-		res = predict_on_img(model, img)
+		res = predict_on_img(model, img) * 255
 		print(time.time() - s)
 		res = np.asarray(res, dtype = np.uint8)
 		res = cv2.cvtColor(res, cv2.COLOR_GRAY2RGB)
-		res *= np.array([255, 0, 0], dtype=np.uint8)
 		alpha = 0.7
 		vis = np.copy(img)
 		cv2.addWeighted(img, alpha, res, 1 - alpha, 0, vis)
