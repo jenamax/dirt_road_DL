@@ -1,3 +1,11 @@
-vid1/*
-vid2/* 
+# Project
+vid1/
+vid2/
 vid.mp4
+
+# PyCharm
+.idea/
+
+# Common
+__pycache__/
+venv/
