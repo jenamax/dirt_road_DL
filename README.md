@@ -6,8 +6,8 @@
    [tutorial](https://docs.python.org/3/library/venv.html).
 1. Run `python -m pip install -U pip setuptools wheel`. This will update pip, setuptools and wheel packages.
 1. Install necessary drivers and software to allow Tensorflow and PyTorch use GPU.
-    - [GPU guide](https://www.tensorflow.org/install/gpu#software_requirements)
-      for Tensorflow.
+    - [GPU guide for Tensorflow](https://www.tensorflow.org/install/gpu#software_requirements).
+    - [GPUs with CUDA](https://developer.nvidia.com/cuda-gpus). *This is not a complete list.*
     - [CUDA executables and documentation](https://developer.nvidia.com/cuda-downloads).
     - Read [docs](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html)
       to find out which drivers you need to support necessary CUDA version.
