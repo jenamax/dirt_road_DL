@@ -27,14 +27,6 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
-        'model_module',
-        help='path to model\'s module',
-    )
-    parser.add_argument(
-        'model_class',
-        help='qualified name of model class',
-    )
-    parser.add_argument(
         'model_file',
         help='path to file with model weights',
     )
@@ -43,18 +35,27 @@ if __name__ == '__main__':
         help='path to resulting file',
     )
     parser.add_argument(
+        'model_module',
+        help='path to module with model class definition',
+    )
+    parser.add_argument(
+        'model_class',
+        help='qualified name of model class',
+    )
+    parser.add_argument(
         '--dims',
         nargs='+',
         type=int,
-        help='dimensions of model input',
+        default=(256, 512),
+        help='dimensions of model input separated by space. Default: 256x512',
     )
 
     args = parser.parse_args()
 
     module = __import__(args.model_module)
     Model: type = getattr(module, args.model_class)
-    model_args, model_dict = torch.load(args.model_file)
-    model: nn.Module = Model(*model_args).eval()
+    model_dict = torch.load(args.model_file)
+    model: nn.Module = Model().eval()
     model.load_state_dict(model_dict)
 
     pytorch2onnx(model, args.dims, args.output_file)
