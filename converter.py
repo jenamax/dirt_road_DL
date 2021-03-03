@@ -1,15 +1,17 @@
-from typing import Tuple
+from typing import List
 
 import onnx
 import torch
 import torch.nn as nn
 from onnxsim import simplify
 
+Default_Shape = (256, 512)
 
-def pytorch2onnx(model: nn.Module, input_shape: Tuple[int, ...], output_file: str):
+
+def pytorch2onnx(model: nn.Module, output_file: str, input_shape: List[int] = Default_Shape):
     # Export to ONNX
     inputs = torch.ones(*input_shape)
-    torch.onnx.export(model, inputs, output_file)
+    torch.onnx.export(model.eval(), inputs, output_file)
 
     # Simplify ONNX
     model = onnx.load(output_file)
@@ -35,27 +37,15 @@ if __name__ == '__main__':
         help='path to resulting file',
     )
     parser.add_argument(
-        'model_module',
-        help='path to module with model class definition',
-    )
-    parser.add_argument(
-        'model_class',
-        help='qualified name of model class',
-    )
-    parser.add_argument(
         '--dims',
         nargs='+',
         type=int,
-        default=(256, 512),
-        help='dimensions of model input separated by space. Default: 256x512',
+        default=Default_Shape,
+        help=f'dimensions of model input separated by space. Default: {"x".join(str(i) for i in Default_Shape)}',
     )
 
     args = parser.parse_args()
 
-    module = __import__(args.model_module)
-    Model: type = getattr(module, args.model_class)
-    model_dict = torch.load(args.model_file)
-    model: nn.Module = Model().eval()
-    model.load_state_dict(model_dict)
+    model = torch.load(args.model_file)
 
-    pytorch2onnx(model, args.dims, args.output_file)
+    pytorch2onnx(model, args.output_file, args.dims)
