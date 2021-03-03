@@ -11,8 +11,7 @@ Default_Shape = (1, 3, 256, 512)
 def pytorch2onnx(model: nn.Module, output_file: str, input_shape: List[int] = Default_Shape):
     # Export to ONNX
     inputs = torch.ones(*input_shape)
-    inputs = inputs.cuda()
-    torch.onnx.export(model.eval(), inputs, output_file, opset_version=11)
+    torch.onnx.export(model.eval().cpu(), inputs, output_file, opset_version=11)
 
     # Simplify ONNX
     model = onnx.load(output_file)
@@ -46,8 +45,6 @@ if __name__ == '__main__':
     )
 
     args = parser.parse_args()
-
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     model = torch.load(args.model_file)
 
