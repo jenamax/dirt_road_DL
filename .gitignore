@@ -1,6 +1,8 @@
+# Project
 vid1/*
 vid2/* 
 vid.mp4
+output.avi
 
 # PyCharm
 .idea/
@@ -8,5 +10,3 @@ vid.mp4
 # Common
 __pycache__/
 venv/
-
-output.avi
