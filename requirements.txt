@@ -1,3 +1,2 @@
-onnx-simplifier
 opencv-python
 segmentation_models_pytorch
